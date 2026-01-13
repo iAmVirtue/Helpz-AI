@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RoleReady AI</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; }
+        .container { border: 1px solid #ccc; padding: 20px; border-radius: 8px; }
+        textarea { width: 100%; height: 150px; margin-top: 10px; }
+        button { background-color: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>RoleReady AI 🚀</h1>
+    <p>Upload your resume and the job description to see if you are ready.</p>
+    
+    <div class="container">
+        <form action="/analyze" method="post" enctype="multipart/form-data">
+            <h3>1. Upload Resume (PDF)</h3>
+            <input type="file" name="resume" accept=".pdf" required>
+            
+            <h3>2. Paste Job Description</h3>
+            <textarea name="job_desc" placeholder="Paste the JD here..." required></textarea>
+            
+            <br><br>
+            <button type="submit">Analyze Gap</button>
+        </form>
+    </div>
+</body>
+</html>
