@@ -1,43 +1,43 @@
 import google.generativeai as genai
-import os
 import json
 
-# Setup API Key (Make sure to set this in your environment or replace directly)
-API_KEY = os.getenv("GOOGLE_API_KEY") 
+# --- PASTE YOUR KEY INSIDE THE QUOTES BELOW ---
+API_KEY = "AIzaSyA2wCqUoE4DdDEBEr9sSF07qgsM7VaZPZE" 
+# ----------------------------------------------
 genai.configure(api_key=API_KEY)
 
 def analyze_resume(resume_text, job_description):
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # CHANGED: We are now using the models explicitly listed in your terminal
+    # Primary: Gemini 2.0 Flash (Fast & Powerful)
+    # Backup: Gemini Flash Latest (Generic pointer to newest version)
+    models_to_try = ['gemini-2.0-flash', 'gemini-flash-latest']
     
-    # The Prompt
-    prompt = f"""
-    You are a strict technical recruiter. Analyze this resume against the job description.
-    
-    RESUME TEXT:
-    {resume_text}
-    
-    JOB DESCRIPTION:
-    {job_description}
-    
-    Output strictly in JSON format with these keys: 
-    - "match_percentage": (integer 0-100)
-    - "missing_keywords": (list of strings)
-    - "critical_gaps": (list of strings, focusing on hard skills)
-    - "quick_fix": (one actionable tip to improve the resume immediately)
-    
-    Do not add Markdown formatting (like ```json). Just return the raw JSON string.
-    """
-    
-    try:
-        response = model.generate_content(prompt)
-        # Clean up potential markdown formatting from AI
-        clean_text = response.text.replace("```json", "").replace("```", "").strip()
-        return json.loads(clean_text)
-    except Exception as e:
-        print(f"AI Error: {e}")
-        return {
-            "match_percentage": 0,
-            "missing_keywords": ["Error generating analysis"],
-            "critical_gaps": ["Could not process request"],
-            "quick_fix": "Try again later."
-        }
+    for model_name in models_to_try:
+        try:
+            print(f"Attempting to use model: {model_name}...")
+            model = genai.GenerativeModel(model_name)
+            
+            prompt = f"""
+            You are a technical recruiter. Compare this resume to the job description.
+            
+            RESUME: {resume_text[:4000]}
+            JOB DESC: {job_description[:4000]}
+            
+            Return ONLY raw JSON (no markdown) with these keys:
+            "match_percentage" (int), "missing_keywords" (list), "critical_gaps" (list), "quick_fix" (string).
+            """
+            
+            response = model.generate_content(prompt)
+            clean_text = response.text.replace("```json", "").replace("```", "").strip()
+            return json.loads(clean_text)
+            
+        except Exception as e:
+            print(f"Model {model_name} failed: {e}")
+            continue
+
+    return {
+        "match_percentage": 0,
+        "missing_keywords": ["Models Failed"],
+        "critical_gaps": ["Could not connect to Gemini 2.0 or Latest"],
+        "quick_fix": "Check check_models.py for valid model names."
+    }

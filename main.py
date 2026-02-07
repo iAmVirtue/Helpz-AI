@@ -1,20 +1,38 @@
+import sys
+import os
+import uvicorn
 from fastapi import FastAPI, Request, Form, UploadFile, File
 from fastapi.templating import Jinja2Templates
-from app.services.parser import extract_text_from_pdf
-from app.services.ai_engine import analyze_resume
-import os  # <--- IMPORT THIS
+
+# 1. Fix Path to see 'app' folder
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# 2. Import Logic
+try:
+    from app.services.parser import extract_text_from_pdf
+    from app.services.ai_engine import analyze_resume
+except ImportError as e:
+    # Fallback if you are running inside app folder by mistake
+    try:
+        from services.parser import extract_text_from_pdf
+        from services.ai_engine import analyze_resume
+    except ImportError:
+        print(f"CRITICAL IMPORT ERROR: {e}")
+        sys.exit(1)
 
 app = FastAPI()
 
-# --- FIX START ---
-# Get the absolute path of the current folder where main.py is
+# 3. Fix Template Directory (Points to app/templates)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Point exactly to app/templates
 templates_dir = os.path.join(BASE_DIR, "app", "templates")
 
-# Initialize templates with the absolute path
+# Verify path exists to avoid confusion
+if not os.path.exists(templates_dir):
+    print(f"WARNING: Template folder not found at {templates_dir}")
+    print("Checking root folder...")
+    templates_dir = os.path.join(BASE_DIR, "templates")
+
 templates = Jinja2Templates(directory=templates_dir)
-# --- FIX END ---
 
 @app.get("/")
 def home(request: Request):
@@ -26,18 +44,21 @@ async def analyze(
     resume: UploadFile = File(...), 
     job_desc: str = Form(...)
 ):
-    resume_text = extract_text_from_pdf(resume.file)
+    try:
+        resume_text = extract_text_from_pdf(resume.file)
+    except Exception as e:
+        return templates.TemplateResponse("index.html", {"request": request, "error": f"Parser Error: {str(e)}"})
     
     if not resume_text:
-        return templates.TemplateResponse("index.html", {"request": request, "error": "Could not read PDF."})
+        return templates.TemplateResponse("index.html", {"request": request, "error": "Could not extract text from PDF."})
         
     analysis_result = analyze_resume(resume_text, job_desc)
     
-    return templates.TemplateResponse("result.html", {
+    # CHANGED: Updated to "results.html" (Plural) to match your file
+    return templates.TemplateResponse("results.html", {
         "request": request, 
         "analysis": analysis_result
     })
 
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
