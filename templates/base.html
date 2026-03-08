@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="RoleReady AI - Premium Resume Analysis Engine">
+    <title>{% block title %}RoleReady AI{% endblock %}</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- html2pdf.js for client-side PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        darkbg: '#0B0F19',
+                        surface: '#151A27',
+                        white: '#FFFFFF',
+                        ash: '#94A3B8',
+                        'ios-blue': '#0A84FF',
+                        accent: '#06D6A0',
+                    },
+                    animation: {
+                        'blob': 'blob 10s infinite',
+                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                        'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 3s linear infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="min-h-screen flex flex-col relative font-sans selection:bg-ios-blue selection:text-white pb-6">
+    <!-- Glassy Navbar -->
+    {% block navbar %}
+    <nav class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50">
+        <div
+            class="glass-panel flex items-center gap-8 px-8 py-3 rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] bg-[#111520]/60 text-white font-medium text-sm backdrop-blur-md transition-all">
+            <a href="{% url 'home' %}" class="hover:text-ios-blue transition-colors tracking-wide">Home</a>
+            <div class="h-4 w-px bg-white/20"></div>
+            <a href="{% url 'explore' %}" class="hover:text-ios-blue transition-colors tracking-wide flex items-center gap-1">
+              <i class="ph ph-graph text-xs"></i> Explore
+            </a>
+            <div class="h-4 w-px bg-white/20"></div>
+            <a href="{% url 'about' %}" class="hover:text-ios-blue transition-colors tracking-wide">About Me</a>
+        </div>
+    </nav>
+    {% endblock %}
+
+    <!-- Ambient Dark Background Blobs -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div
+            class="absolute top-[0%] left-[10%] w-[600px] h-[600px] bg-sky-400 rounded-full mix-blend-screen filter blur-[150px] opacity-[0.1] animate-blob">
+        </div>
+        <div
+            class="absolute bottom-[20%] right-[0%] w-[500px] h-[500px] bg-blue-600 rounded-full mix-blend-screen filter blur-[150px] opacity-[0.1] animate-blob animation-delay-2000">
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    {% block footer %}
+    <!-- Glassy Footer -->
+    <footer class="w-full flex justify-center mt-auto relative z-50 pb-8 pt-16">
+        <div
+            class="glass-panel w-[90%] md:w-auto md:min-w-[max-content] flex flex-col md:flex-row items-center justify-between gap-4 md:gap-12 px-8 py-3 rounded-3xl md:rounded-full border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] bg-[#111520]/60 text-white backdrop-blur-md transition-all">
+            <!-- Left Side: Brand & Disclaimer -->
+            <div class="flex flex-col items-center md:items-start text-xs text-ash text-center md:text-left">
+                <span class="text-white font-semibold tracking-wide">RoleReady AI &copy; 2026</span>
+                <span class="font-light mt-0.5">An open-source project built for college students.</span>
+            </div>
+
+            <!-- Right Side: Links -->
+            <div class="flex items-center gap-4 text-xs font-light text-ash">
+                <a href="https://github.com/ananya411-robinson" target="_blank" rel="noopener noreferrer"
+                    class="hover:text-ios-blue transition-colors text-[1.1rem]" aria-label="GitHub">
+                    <i class="ph ph-github-logo"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/ananyarobinson12/" target="_blank" rel="noopener noreferrer"
+                    class="hover:text-ios-blue transition-colors text-[1.1rem]" aria-label="LinkedIn">
+                    <i class="ph ph-linkedin-logo"></i>
+                </a>
+                <div class="h-4 w-px bg-white/20"></div>
+                <span class="tracking-wide">Built with Python &amp; Designed by <span
+                        class="font-semibold text-white">Ananya Robinson</span></span>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
+    {% block extra_scripts %}{% endblock %}
+    <script src="{% static 'js/app.js' %}?v={{ request.path|default:'1.0' }}{{ request.GET.urlencode }}"></script>
+    <script>
+      // Force cache bust fallback
+      const appScript = document.querySelector(`script[src^="{% static 'js/app.js' %}"]`);
+      if(appScript) {
+        appScript.src = "{% static 'js/app.js' %}?t=" + new Date().getTime();
+      }
+    </script>
+</body>
+
+</html>

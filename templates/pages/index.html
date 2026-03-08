@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}RoleReady AI - Premium Report{% endblock %}
+
+{% block content %}
+<!-- Main Application Container -->
+<main class="w-full max-w-7xl mx-auto z-10 px-4 sm:px-8 pt-16 md:pt-24 space-y-12">
+
+    <!-- ==========================================
+             SECTION 1: THE CONCIERGE INPUT FLOW
+        =========================================== -->
+    <section id="section-input" class="w-full">
+        <div class="text-center mb-10 animate-fade-in-up">
+            <div class="inline-flex items-center justify-center p-3 bg-ios-blue/10 rounded-full mb-4">
+                <i class="ph ph-sparkle text-ios-blue text-2xl animate-pulse"></i>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-white">
+                Hello. Let's get you <span class="text-ios-blue">RoleReady</span>.
+            </h1>
+        </div>
+
+        <div class="glass-panel rounded-3xl p-6 md:p-10 space-y-2 shadow-2xl animate-fade-in-up"
+            style="animation-delay: 0.1s;">
+
+            <!-- STEP 1: RESUME -->
+            <div id="step-1" class="transition-all duration-500">
+                <label class="block text-lg font-medium text-white mb-4">
+                    To begin, please upload your most recent resume.
+                </label>
+                <div id="dropzone"
+                    class="border-2 border-dashed border-ash/30 bg-surface/50 rounded-2xl p-8 text-center transition-all duration-300 hover:border-ios-blue hover:bg-ios-blue/5 cursor-pointer group relative overflow-hidden">
+                    <input type="file" id="fileInput"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept=".pdf" />
+                    <div class="flex flex-col items-center justify-center pointer-events-none">
+                        <div
+                            class="w-16 h-16 rounded-full bg-surface group-hover:bg-ios-blue/20 flex items-center justify-center mb-4 transition-colors border border-white/5">
+                            <i
+                                class="ph ph-upload-simple text-3xl text-ash group-hover:text-ios-blue transition-colors"></i>
+                        </div>
+                        <p class="text-white font-medium text-lg mb-1" id="fileNameDisplay">Select your Resume (PDF)
+                        </p>
+                        <p class="text-ash text-sm font-light">Drag & drop or click to browse</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: JOB DESCRIPTION (Initially Hidden) -->
+            <div id="step-2" class="reveal-step pt-6">
+                <div class="h-px w-full bg-gradient-to-r from-transparent via-ash/20 to-transparent mb-8"></div>
+                <label class="block text-lg font-medium text-white mb-2 flex items-center gap-2">
+                    <i class="ph ph-check-circle text-emerald-400"></i> Resume secured. What role are you aiming
+                    for?
+                </label>
+                <p class="text-ash text-sm font-light mb-4">Paste the target Job Description below so we can align
+                    your skills.</p>
+                <div class="relative group">
+                    <textarea id="jdInput" rows="5"
+                        class="relative w-full bg-surface/80 border border-ash/20 rounded-2xl p-5 text-white placeholder-ash/50 focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue/50 resize-none transition-all custom-scrollbar font-light"
+                        placeholder="e.g., 'We are looking for a Software Engineer proficient in React, Node.js, and cloud architecture...'"></textarea>
+                </div>
+            </div>
+
+            <!-- STEP 3: ACTION BUTTON (Initially Hidden) -->
+            <div id="step-3" class="reveal-step pt-6">
+                <button id="analyzeBtn" onclick="startAnalysis()"
+                    class="w-full py-4 rounded-2xl bg-ios-blue text-white font-bold text-lg shadow-[0_0_20px_rgba(10,132,255,0.4)] hover:shadow-[0_0_30px_rgba(10,132,255,0.6)] transform hover:-translate-y-1 transition-all duration-300 flex justify-center items-center gap-2 group">
+                    <i class="ph ph-magic-wand text-xl group-hover:rotate-12 transition-transform"></i> Generate My
+                    Analysis
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+             SECTION 2: LOADING STATE (Initially Hidden)
+        =========================================== -->
+    <section id="section-loading"
+        class="hidden w-full py-16 flex flex-col items-center justify-center animate-fade-in-up">
+        <div class="relative w-24 h-24 mb-6">
+            <div class="absolute inset-0 border-4 border-surface rounded-full shadow-sm"></div>
+            <div class="absolute inset-0 border-4 border-ios-blue border-t-transparent rounded-full animate-spin">
+            </div>
+            <div class="absolute inset-2 border-4 border-ash/20 border-b-transparent rounded-full animate-spin-slow"
+                style="animation-direction: reverse;"></div>
+            <i
+                class="ph ph-brain absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-3xl text-ios-blue animate-pulse"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-2">Analyzing Profile</h2>
+        <p class="text-ash font-light" id="loadingSub">Extracting keywords & matching neural vectors...</p>
+
+        <div class="w-64 h-1.5 bg-surface rounded-full mt-6 overflow-hidden">
+            <div class="h-full bg-ios-blue w-0 rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(10,132,255,0.8)]"
+                id="loadingBar"></div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+             SECTION 3: UNIFIED RESULTS (Initially Hidden)
+        =========================================== -->
+    <div id="section-results" class="hidden animate-fade-in-up w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+            <!-- Left Column: Extracted Resume Column -->
+            <div class="lg:col-span-5 relative">
+                <div class="glass-panel rounded-3xl p-6 md:p-8 h-full border border-white/5 flex flex-col">
+                    <div class="flex flex-row justify-between w-full items-center mb-6 border-b border-ash/10 pb-4">
+                        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="ph ph-file-text text-ios-blue text-2xl"></i> Extracted Resume
+                        </h3>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="toggleResumeEdit()" id="editResumeBtn" class="text-xs px-3 py-1.5 rounded-lg bg-surface hover:bg-white/10 text-ios-blue border border-ios-blue/30 transition-colors flex items-center gap-1">
+                                <i class="ph ph-pencil-simple"></i> Modify
+                            </button>
+                            <button type="button" onclick="downloadResume()" id="downloadResumeBtn" class="hidden text-xs px-3 py-1.5 rounded-lg bg-ios-blue hover:bg-blue-600 text-white transition-colors flex items-center gap-1">
+                                <i class="ph ph-download-simple"></i> Save & Download
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <textarea class="hidden w-full flex-grow min-h-[500px] bg-darkbg border border-white/10 text-sm text-ash font-mono p-4 rounded-xl focus:outline-none focus:border-ios-blue resize-y mb-2" id="extracted-text-edit"></textarea>
+                    
+                    <div class="text-xs text-ash space-y-3 font-mono pr-2 pb-2 overflow-auto" id="extracted-text-body">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Analysis Container Details -->
+            <div class="lg:col-span-7 w-full flex flex-col gap-8">
+
+                <!-- Analysis Matrix Panel -->
+                <section class="glass-panel rounded-3xl p-6 md:p-10">
+                    <div
+                        class="flex flex-col md:flex-row justify-between items-center mb-10 border-b border-ash/10 pb-6">
+                        <h2 class="text-3xl md:text-4xl font-bold text-white">Analysis <span
+                                class="text-ios-blue">Matrix</span>
+                        </h2>
+
+                        <!-- Circular Progress -->
+                        <div
+                            class="relative flex items-center justify-center w-32 h-32 mt-6 md:mt-0 bg-surface rounded-full shadow-inner border border-white/5">
+                            <svg class="w-full h-full drop-shadow-[0_0_10px_rgba(10,132,255,0.3)]"
+                                viewBox="0 0 100 100">
+                                <circle class="text-darkbg stroke-current" stroke-width="8" cx="50" cy="50" r="40"
+                                    fill="transparent"></circle>
+                                <circle id="scoreCircle" class="text-ios-blue stroke-current progress-ring__circle"
+                                    stroke-width="8" stroke-linecap="round" cx="50" cy="50" r="40" fill="transparent"
+                                    stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                            </svg>
+                            <div class="absolute flex flex-col items-center justify-center">
+                                <span class="text-3xl font-bold text-white" id="scoreText">0%</span>
+                                <span class="text-[10px] text-ash uppercase tracking-widest font-semibold">Match</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Recommendation -->
+                        <div
+                            class="md:col-span-2 glass-card rounded-2xl p-6 relative overflow-hidden bg-ios-blue/5 border-ios-blue/20">
+                            <div class="absolute top-0 left-0 w-1 h-full bg-ios-blue"></div>
+                            <h3 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                                <i class="ph ph-robot text-ios-blue text-xl"></i> AI Recommendation
+                            </h3>
+                            <ul class="text-ash leading-relaxed font-light text-sm md:text-base list-disc list-inside space-y-2 ml-1"
+                                id="ai-quick-fix">
+                            </ul>
+                        </div>
+
+                        <!-- Missing Keywords -->
+                        <div class="glass-card rounded-2xl p-6 h-full">
+                            <h3
+                                class="text-lg font-bold text-white mb-4 border-b border-ash/10 pb-2 flex items-center gap-2">
+                                <i class="ph ph-magnifying-glass-minus text-rose-400"></i> Missing Keywords
+                            </h3>
+                            <div class="flex flex-wrap gap-2" id="missing-keywords-list">
+                            </div>
+                        </div>
+
+                        <!-- Critical Gaps -->
+                        <div class="glass-card rounded-2xl p-6 border-l-4 border-l-rose-500 h-full">
+                            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                <i class="ph ph-warning-circle text-rose-500 text-xl"></i> Critical Gaps
+                            </h3>
+                            <ul class="space-y-3" id="critical-gaps-list">
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Action Plan Panel -->
+        <section class="glass-panel rounded-3xl p-6 md:p-10 mt-8 w-full">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-2">Curated <span class="text-ios-blue">Action
+                        Plan</span></h2>
+                <p class="text-ash font-light">Master your missing skills specifically targeted for this role.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <!-- Left Col: Interview Simulator -->
+                <div class="glass-card rounded-2xl p-6 md:p-8">
+                    <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                        <i class="ph ph-chats-circle text-ios-blue text-2xl"></i> Interview Simulator
+                    </h3>
+                    <p class="text-sm text-ash mb-6">Test your knowledge. Click to reveal ideal answers.</p>
+
+                    <div class="space-y-3" id="accordion-container">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Right Col: Micro Projects -->
+                <div class="glass-card rounded-2xl p-6 md:p-8">
+                    <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                        <i class="ph ph-code text-ash text-2xl"></i> Micro Projects
+                    </h3>
+                    <p class="text-sm text-ash mb-6">Complete actionable steps to close your skill gaps.</p>
+
+                    <div class="space-y-4" id="task-container">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reset Button -->
+        <div class="flex justify-center pt-8 pb-10">
+            <button onclick="resetApp()"
+                class="px-8 py-3 rounded-xl border border-ash/30 text-white font-medium hover:bg-surface hover:border-ios-blue hover:text-ios-blue transition-all duration-300 flex items-center gap-2 shadow-sm">
+                <i class="ph ph-arrow-counter-clockwise"></i> Analyze Another Role
+            </button>
+        </div>
+
+    </div>
+</main>
+{% endblock %}
