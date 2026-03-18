@@ -1,0 +1,84 @@
+body {
+    background-color: #0B0F19;
+    color: #E2E8F0;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0B0F19;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0A84FF;
+}
+
+/* Dark Glassmorphism Utilities */
+.glass-panel {
+    background: rgba(21, 26, 39, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+.glass-card {
+    background: #111520;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    border-color: rgba(10, 132, 255, 0.4);
+    box-shadow: 0 10px 30px -10px rgba(10, 132, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* SVG Progress Animation */
+.progress-ring__circle {
+    transition: stroke-dashoffset 1.5s ease-in-out;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+/* Accordion transition */
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease;
+}
+
+.accordion-item.active .accordion-content {
+    max-height: 300px;
+    padding-bottom: 1rem;
+}
+
+.accordion-item.active .ph-caret-down {
+    transform: rotate(180deg);
+}
+
+/* Smooth Reveal Classes */
+.reveal-step {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reveal-step.active {
+    opacity: 1;
+    max-height: 800px;
+    /* Arbitrary large height for textareas */
+    overflow: visible;
+}
