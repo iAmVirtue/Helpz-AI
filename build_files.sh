@@ -1,10 +1,15 @@
 #!/bin/bash
 echo "BUILD START"
 
-# Use python3 instead of python3.9 to avoid "command not found" on different Vercel server racks
+# 1. Install dependencies using the universal python3 command
 python3 -m pip install -r requirements.txt
 
-# Force Django to put the files in the staticfiles folder
+# 2. Force create the directories (This prevents the Vercel "No Output Directory" crash)
+mkdir -p static
+mkdir -p staticfiles_build/static
+mkdir -p staticfiles
+
+# 3. Run collectstatic and print any hidden errors to the screen
 python3 manage.py collectstatic --noinput --clear
 
 echo "BUILD END"
