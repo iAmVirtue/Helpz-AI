@@ -1,7 +1,10 @@
 #!/bin/bash
-# Install dependencies
 echo "BUILD START"
-python3.11 -m pip install -r requirements.txt
-# Run collectstatic
-python3.11 manage.py collectstatic --noinput --clear
+
+# Use python3 instead of python3.9 to avoid "command not found" on different Vercel server racks
+python3 -m pip install -r requirements.txt
+
+# Force Django to put the files in the staticfiles folder
+python3 manage.py collectstatic --noinput --clear
+
 echo "BUILD END"
