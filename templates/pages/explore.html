@@ -1,0 +1,820 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Knowledge Explorer | RoleReady AI{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    background: #0B0F19; /* Deep dark space background */
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  /* Canvas for particles.js effect */
+  #particles-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+  }
+
+  /* UI overlay container */
+  #ui-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none; /* Let pointer events pass through to canvas */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.5s ease;
+  }
+
+  /* When search is active, push search bar to the top */
+  #ui-layer.compact {
+    justify-content: flex-start;
+    padding-top: 2rem;
+  }
+
+  /* Search Header & Form */
+  .search-wrapper {
+    background: rgba(15, 20, 35, 0.65);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 2rem;
+    padding: 2.5rem 2rem;
+    width: 90%;
+    max-width: 650px;
+    text-align: center;
+    pointer-events: auto;
+    transition: all 0.5s ease;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  }
+
+  #ui-layer.compact .search-wrapper {
+    padding: 1rem 1.5rem;
+    max-width: 500px;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .explore-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: white;
+    transition: all 0.5s ease;
+  }
+  .explore-header p {
+    color: #94A3B8;
+    margin-bottom: 2rem;
+    transition: all 0.5s ease;
+  }
+  
+  #ui-layer.compact .explore-header {
+    display: none;
+  }
+
+  .search-form {
+    display: flex;
+    width: 100%;
+    position: relative;
+  }
+
+  .search-form input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 100px;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s;
+  }
+  
+  .search-form input:focus {
+    border-color: #0A84FF;
+    background: rgba(10, 132, 255, 0.05);
+    box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.15);
+  }
+
+  #ui-layer.compact .search-form input {
+    padding: 0.8rem 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  .search-form button {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #0A84FF;
+    color: white;
+    border: none;
+    border-radius: 100px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .search-form button:hover {
+    background: #006ce4;
+  }
+
+  #ui-layer.compact .search-form button {
+    padding: 0.5rem 1.2rem;
+  }
+
+  /* Home Button (shown in compact mode) */
+  #home-btn {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    background: rgba(15, 20, 35, 0.5);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+    padding: 0.6rem 1.2rem;
+    border-radius: 100px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    pointer-events: auto;
+    transition: all 0.2s;
+  }
+  #home-btn:hover {
+    color: white;
+    background: rgba(255,255,255,0.1);
+  }
+  #ui-layer.compact #home-btn {
+    display: flex;
+  }
+
+  /* Detail Panel */
+  #detail-panel {
+    position: absolute;
+    width: 320px;
+    background: rgba(15, 20, 35, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    color: white;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  
+  #detail-panel.visible {
+    opacity: 1;
+  }
+
+  .dp-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #fff;
+  }
+  .dp-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .bg-core { background: rgba(10,132,255,0.2); color: #0A84FF; border: 1px solid rgba(10,132,255,0.3); }
+  .bg-secondary { background: rgba(6,214,160,0.2); color: #06D6A0; border: 1px solid rgba(6,214,160,0.3); }
+  .bg-outer { background: rgba(148,163,184,0.15); color: #94A3B8; border: 1px solid rgba(148,163,184,0.3); }
+  
+  .dp-desc {
+    font-size: 0.9rem;
+    color: #94A3B8;
+    line-height: 1.6;
+  }
+
+  /* Toasts and Overlays */
+  #loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(11, 15, 25, 0.8);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    backdrop-filter: blur(6px);
+    pointer-events: auto;
+  }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid rgba(255,255,255,0.1);
+    border-radius: 50%;
+    border-top-color: #0A84FF;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 1rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  #error-toast {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(220, 38, 38, 0.15);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    color: #FCA5A5;
+    padding: 0.8rem 1.5rem;
+    border-radius: 100px;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 50;
+  }
+  #error-toast.visible { opacity: 1; pointer-events: auto; }
+  /* Right Sidebar Checklist */
+  #checklist-sidebar {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 350px;
+    height: 100vh;
+    background: rgba(15, 20, 35, 0.85);
+    backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(255,255,255,0.1);
+    transition: right 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+    z-index: 30;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.5);
+  }
+  #ui-layer.compact #checklist-sidebar {
+    right: 0;
+  }
+  
+  /* Custom scrollbar for checklist items */
+  #checklist-items::-webkit-scrollbar {
+    width: 6px;
+  }
+  #checklist-items::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  #checklist-items::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+  #checklist-items::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Full-screen particles.js style canvas -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- Top level UI overlay -->
+<div id="ui-layer">
+  <a href="{% url 'home' %}" id="home-btn"><i class="ph ph-arrow-left"></i> Home</a>
+
+  <div class="search-wrapper">
+    <div class="explore-header">
+      <h1>Knowledge Galaxy</h1>
+      <p>Search any concept to ignite an interconnected universe of particles.</p>
+    </div>
+    <form class="search-form" onsubmit="handleSearch(event)">
+      <input type="text" id="search-input" placeholder="e.g. Machine Learning, Python, Web3..." required autocomplete="off" />
+      <button type="submit">Dig In <i class="ph ph-arrow-right ml-1"></i></button>
+    </form>
+  </div>
+  
+  <!-- Detail Panel for Hovering -->
+  <div id="detail-panel">
+    <div class="dp-title" id="dp-title">Topic</div>
+    <div class="dp-badge bg-core" id="dp-badge">Core</div>
+    <div class="dp-desc" id="dp-desc">Description of the node will dynamically appear here when you hover over an AI particle.</div>
+  </div>
+
+  <!-- Checklist Sidebar -->
+  <div id="checklist-sidebar">
+    <h2 class="text-xl font-bold text-white mb-2">Knowledge Tracker</h2>
+    <p class="text-sm text-slate-400 mb-6 pb-4 border-b border-white/10" id="checklist-desc">Check the concepts you know to measure your mastery of the universe.</p>
+    
+    <div id="checklist-items" class="flex flex-col gap-3 flex-grow overflow-y-auto mb-6 pr-2">
+      <!-- Generated via JS -->
+    </div>
+    
+    <div id="checklist-result" class="hidden flex-col items-start justify-center p-5 bg-black/40 border border-white/5 rounded-2xl mb-5 shadow-inner">
+      <div class="w-full flex justify-between items-end mb-3">
+        <div class="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-semibold">Mastery Bar Graph</div>
+        <div class="text-3xl font-bold text-white transition-all leading-none" id="knowledge-percent">0%</div>
+      </div>
+      
+      <div class="w-full h-4 bg-white/5 rounded-full overflow-hidden flex relative shadow-inner border border-white/5">
+         <div id="knowledge-bar" class="h-full bg-ios-blue transition-all duration-1000 ease-out w-0 relative rounded-full">
+             <div class="absolute inset-0 bg-gradient-to-r from-transparent to-white/30"></div>
+         </div>
+      </div>
+    </div>
+
+    <button type="button" onclick="calculateKnowledge()" id="generate-btn" class="w-full py-3.5 rounded-full bg-ios-blue hover:bg-blue-600 focus:ring-4 focus:ring-ios-blue/30 text-white font-semibold transition-all">
+      Verify Knowledge
+    </button>
+  </div>
+
+</div>
+
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <p class="text-white font-medium">Assembing particle network...</p>
+</div>
+
+<div id="error-toast"></div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+/* =========================================================
+   UI ELEMENTS & INITIALIZATION
+   ========================================================= */
+const canvas = document.getElementById('particles-canvas');
+const ctx = canvas.getContext('2d');
+const detailPanel = document.getElementById('detail-panel');
+const searchUiLayer = document.getElementById('ui-layer');
+
+/* =========================================================
+   CUSTOM PARTICLES.JS ENGINE WITH AI KNOWLEDGE GRAPH
+   ========================================================= */
+let width, height;
+
+// State arrays
+let particles = [];
+let aiLinkSet = new Set();
+let aiLinksData = [];
+let currentAiData = null;
+
+// Mouse tracking
+let mx = -1000, my = -1000;
+window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+window.addEventListener('mouseleave', () => { mx = -1000; my = -1000; hideDetailPanel(); });
+
+function resize() {
+  width = canvas.width = window.innerWidth * window.devicePixelRatio;
+  height = canvas.height = window.innerHeight * window.devicePixelRatio;
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  width = window.innerWidth;
+  height = window.innerHeight;
+}
+window.addEventListener('resize', () => { resize(); initBaseParticles(); });
+
+// 1. Initialize empty base universe
+function initBaseParticles() {
+  particles = particles.filter(p => p.isAi); // Keep AI particles if any exist
+  const count = Math.floor((width * height) / 12000); // Node density
+  for(let i=0; i < count; i++){
+    particles.push({
+      id: Math.random().toString(),
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.3, // highly restricted movement
+      vy: (Math.random() - 0.5) * 0.3,
+      radius: Math.random() * 2 + 1,
+      color: `rgba(255, 255, 255, ${Math.random() * 0.1})`, // very faint base dots (rest dark)
+      isAi: false
+    });
+  }
+}
+
+// 2. Inject AI Data into the particle system
+function injectAiData(data, knownIds) {
+  // Clear previous AI nodes
+  particles = particles.filter(p => !p.isAi);
+  
+  // Create AI Particles
+  const safeWidth = width - 350; // shift center away from sidebar
+  const cx = safeWidth / 2;
+  const cy = height / 2 + 80;
+
+  const aiNodes = data.nodes.map(n => {
+    let nx, ny;
+    if (n.category === 'core') {
+      nx = cx;
+      ny = cy;
+    } else {
+      const isSecondary = n.category === 'secondary';
+      const angle = Math.random() * Math.PI * 2;
+      // Spread them across the full width of the screen depending on category depth
+      const baseDist = Math.max(safeWidth, height);
+      const dist = isSecondary ? (Math.random() * 0.15 + 0.15) * baseDist : (Math.random() * 0.25 + 0.3) * baseDist;
+      
+      nx = cx + Math.cos(angle) * dist;
+      ny = cy + Math.sin(angle) * dist;
+      
+      // Clamp boundaries so they don't spawn off-screen or under search bar
+      nx = Math.max(80, Math.min(safeWidth - 80, nx));
+      ny = Math.max(160, Math.min(height - 80, ny));
+    }
+
+    let pColor = 'rgba(255, 255, 255, 0.2)'; // default subtle
+    if (n.category === 'core') {
+      pColor = '#0A84FF'; // Core is blue
+    } else if (knownIds && knownIds.has(n.id)) {
+      pColor = '#06D6A0'; // Known is bright green
+    } else if (!knownIds) {
+      // If we haven't submitted knowledge yet, give them standard base styling
+      pColor = n.category === 'secondary' ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.6)';
+    }
+
+    return {
+      id: n.id,
+      x: nx,
+      y: ny,
+      vx: (Math.random() - 0.5) * 0.2, // highly restricted AI drift
+      vy: (Math.random() - 0.5) * 0.2,
+      radius: n.category === 'core' ? 7 : (n.category === 'secondary' ? 5 : 3),
+      color: pColor,
+      isAi: true,
+      data: n
+    };
+  });
+  
+  particles.push(...aiNodes);
+  
+  // Store valid links
+  aiLinkSet.clear();
+  aiLinksData = [];
+  const validIds = new Set(aiNodes.map(n => n.id));
+  
+  data.links.forEach(l => {
+    if (validIds.has(l.source) && validIds.has(l.target)) {
+      aiLinkSet.add(`${l.source}-${l.target}`);
+      aiLinkSet.add(`${l.target}-${l.source}`);
+      aiLinksData.push(l);
+    }
+  });
+}
+
+function areLinked(id1, id2) {
+  return aiLinkSet.has(`${id1}-${id2}`);
+}
+
+// 3. Render Loop
+function loop() {
+  ctx.clearRect(0, 0, width, height);
+
+  // PRE-PASS: Find Hover first so we can freeze the world
+  let hoveredAiNode = null;
+  let minHoverDist = Infinity;
+  
+  particles.forEach(p => {
+    if(p.isAi) {
+      const dx = p.x - mx;
+      const dy = p.y - my;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if(dist < Math.max(p.radius + 15, 20) && dist < minHoverDist) {
+        minHoverDist = dist;
+        hoveredAiNode = p;
+      }
+    }
+  });
+  
+  // Update Physics (ONLY if we haven't frozen the universe by hovering)
+  if (!hoveredAiNode) {
+    const rightBound = searchUiLayer.classList.contains('compact') ? width - 350 : width;
+    
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      
+      // Bounds bounce (with an invisible 140px ceiling to protect the search bar)
+      if(p.x < 0) { p.x = 0; p.vx *= -1; }
+      if(p.x > rightBound) { p.x = rightBound; p.vx *= -1; }
+      if(p.y < 140) { p.y = 140; p.vy *= -1; } // Bounce off invisible ceiling
+      if(p.y > height) { p.y = height; p.vy *= -1; }
+      
+      // Mouse repulse interaction
+      if (mx < rightBound) {
+        const dx = p.x - mx;
+        const dy = p.y - my;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if(dist < 120) {
+          const force = (120 - dist) / 120;
+          p.x += (dx/dist) * force * 1.5;
+          p.y += (dy/dist) * force * 1.5;
+        }
+      }
+    });
+  }
+  
+  // Draw Connection Lines (O(N^2) optimized)
+  for(let i=0; i < particles.length; i++) {
+    for(let j=i+1; j < particles.length; j++) {
+      const p1 = particles[i], p2 = particles[j];
+      const dx = p1.x - p2.x, dy = p1.y - p2.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      
+      // Standard particles.js proximity links (increased by ~10%)
+      if(dist < 145) {
+        let opacity = 1 - (dist / 145);
+        
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        
+        // Highlight explicit AI connections if they happen to drift near each other
+        if (p1.isAi && p2.isAi && areLinked(p1.id, p2.id)) {
+          ctx.strokeStyle = `rgba(10, 132, 255, ${opacity * 0.9})`;
+          ctx.lineWidth = 1.2;
+        } else {
+          ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.15})`;
+          ctx.lineWidth = 0.5;
+        }
+        ctx.stroke();
+      }
+    }
+  }
+  
+  // Draw explicit long-range tracking lines for AI nodes (weak visibility for structure)
+  aiLinksData.forEach(link => {
+    const p1 = particles.find(p => p.id === link.source);
+    const p2 = particles.find(p => p.id === link.target);
+    if(p1 && p2) {
+      const dx = p1.x - p2.x, dy = p1.y - p2.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist >= 145) { // beyond standard connect range
+        // Draw the line with distance-based opacity that stretches across the whole screen
+        let opacity = Math.max(0.05, 1 - (dist / (Math.max(width, height))));
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.strokeStyle = `rgba(10, 132, 255, ${opacity * 0.4})`;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
+    }
+  });
+
+  // Draw Particles
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+  });
+  
+  // Render AI Labels ALWAYS (so they are visible even when not hovering)
+  ctx.textAlign = "center";
+  ctx.shadowColor = "rgba(0,0,0,0.8)";
+  ctx.shadowBlur = 4;
+  
+  particles.forEach(p => {
+    if (p.isAi) {
+      // Highlight the hovered node stronger, dim others slightly
+      ctx.fillStyle = (hoveredAiNode && p === hoveredAiNode) ? "white" : "rgba(255, 255, 255, 0.6)";
+      ctx.font = (hoveredAiNode && p === hoveredAiNode) ? "600 14px Outfit" : "400 11px Outfit";
+      ctx.fillText(p.data.label, p.x, p.y - 12);
+    }
+  });
+  
+  ctx.shadowBlur = 0; // reset
+  
+  // Render details panel and highlight for hovered node
+  if (hoveredAiNode) {
+    // Highlight node size visually
+    ctx.beginPath();
+    ctx.arc(hoveredAiNode.x, hoveredAiNode.y, hoveredAiNode.radius + 4, 0, Math.PI*2);
+    ctx.fillStyle = hoveredAiNode.color;
+    ctx.fill();
+
+    showDetailPanel(hoveredAiNode.data, hoveredAiNode.x, hoveredAiNode.y);
+    canvas.style.cursor = 'pointer';
+  } else {
+    hideDetailPanel();
+    canvas.style.cursor = 'default';
+  }
+
+  requestAnimationFrame(loop);
+}
+
+// Setup & Launch Loop
+resize();
+initBaseParticles();
+loop();
+
+
+/* =========================================================
+   UI HELPERS & SEARCH LOGIC
+   ========================================================= */
+
+function showDetailPanel(data, x, y) {
+  document.getElementById('dp-title').textContent = data.label;
+  document.getElementById('dp-desc').textContent = data.description || "No description.";
+  
+  const badge = document.getElementById('dp-badge');
+  badge.className = 'dp-badge ' + (data.category === 'core' ? 'bg-core' : (data.category === 'secondary' ? 'bg-secondary' : 'bg-outer'));
+  badge.textContent = data.category === 'core' ? 'Core Topic' : `${data.category} (${Math.round(data.relevance*100)}%)`;
+  
+  // Calculate dynamic position (centered over the node)
+  const panelWidth = 320;
+  // Estimate panel height based on content or use a fixed safe height padding
+  const estPanelHeight = 160; 
+  
+  let left = x - (panelWidth / 2);
+  let top = y + 25; // Default: below the node
+  
+  // Viewport clamping so it doesn't fly off screen
+  if (left < 10) left = 10;
+  if (left + panelWidth > window.innerWidth - 10) left = window.innerWidth - panelWidth - 10;
+  
+  // If too close to bottom, pop it ABOVE the particle instead
+  if (top + estPanelHeight > window.innerHeight) {
+    top = y - estPanelHeight - 15;
+  }
+  
+  detailPanel.style.left = `${left}px`;
+  detailPanel.style.top = `${top}px`;
+  detailPanel.classList.add('visible');
+}
+
+function hideDetailPanel() {
+  detailPanel.classList.remove('visible');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('error-toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 5000);
+}
+
+async function handleSearch(event) {
+  event.preventDefault();
+  const q = document.getElementById('search-input').value.trim();
+  if(!q) return;
+  
+  const btn = event.target.querySelector('button');
+  btn.disabled = true;
+  document.getElementById('loading-overlay').style.display = 'flex';
+  
+  try {
+    const response = await fetch('/api/explore_graph/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ query: q })
+    });
+    const data = await response.json();
+    
+    if(!response.ok || data.error) throw new Error(data.error || 'API Failed');
+    
+    // Success: Compact the UI to top header and spawn AI particles
+    currentAiData = data;
+    searchUiLayer.classList.add('compact');
+    injectAiData(data);
+    buildChecklist(data.nodes);
+    
+  } catch (err) {
+    showToast(err.message + ". Using backup data mode.");
+    
+    // Add gracefully degraded fallback data when API fails or rate-limits so UI is testable
+    const fallbackData = {
+      nodes: [
+        { id: '1', label: document.getElementById('search-input').value || 'Topic', description: 'Core search topic fallback', category: 'core', relevance: 1.0 },
+        { id: '2', label: 'Web Developement', description: 'Building websites', category: 'secondary', relevance: 0.9 },
+        { id: '3', label: 'Cybersecurity', description: 'Protecting systems', category: 'secondary', relevance: 0.8 },
+        { id: '4', label: 'Data Science', description: 'Analyzing data', category: 'secondary', relevance: 0.85 },
+        { id: '5', label: 'Django', description: 'Python Framework', category: 'outer', relevance: 0.6 },
+        { id: '6', label: 'React', description: 'JS Library', category: 'outer', relevance: 0.5 },
+        { id: '7', label: 'Penetration Testing', description: 'Hacking systems securely', category: 'outer', relevance: 0.7 }
+      ],
+      links: [
+        { source: '1', target: '2' }, { source: '1', target: '3' }, { source: '1', target: '4' },
+        { source: '2', target: '5' }, { source: '2', target: '6' }, { source: '3', target: '7' }
+      ]
+    };
+    currentAiData = fallbackData;
+    searchUiLayer.classList.add('compact');
+    injectAiData(fallbackData);
+    buildChecklist(fallbackData.nodes);
+
+  } finally {
+    btn.disabled = false;
+    document.getElementById('loading-overlay').style.display = 'none';
+  }
+}
+
+function buildChecklist(nodes) {
+  const container = document.getElementById('checklist-items');
+  document.getElementById('checklist-result').classList.add('hidden');
+  document.getElementById('checklist-result').classList.remove('flex');
+  container.innerHTML = '';
+  
+  // Filter out the center core concept, leave the connections
+  const concepts = nodes.filter(n => n.category !== 'core');
+  
+  concepts.forEach((n, i) => {
+    let importanceBadge = n.category === 'secondary' 
+      ? '<span style="margin-left:auto; font-size:10px; font-weight:bold; text-transform:uppercase; color:#06D6A0; letter-spacing:0.1em; background:rgba(6,214,160,0.1); padding:2px 6px; border-radius:4px;">Core</span>' 
+      : '<span style="margin-left:auto; font-size:10px; text-transform:uppercase; color:#94A3B8; letter-spacing:0.1em; background:rgba(148,163,184,0.1); padding:2px 6px; border-radius:4px;">Outer</span>';
+
+    const item = document.createElement('label');
+    item.style.cssText = 'display:flex; align-items:center; gap:12px; padding:12px; border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.05); cursor:pointer; margin-bottom: 8px; transition: background 0.2s;';
+    item.innerHTML = `
+      <input type="checkbox" class="knowledge-cb" value="${n.id}" data-category="${n.category}" style="width:16px; height:16px; accent-color:#0A84FF; cursor:pointer;">
+      <span style="font-size:14px; color:rgba(255,255,255,0.8); font-weight:500;">${n.label}</span>
+      ${importanceBadge}
+    `;
+    item.style.animation = `fadeIn 0.3s ease forwards ${i * 0.03}s`;
+    item.style.opacity = '0';
+    container.appendChild(item);
+  });
+}
+
+function calculateKnowledge() {
+  const cbs = document.querySelectorAll('.knowledge-cb');
+  if(cbs.length === 0) return;
+  
+  let totalScore = 0;
+  let userScore = 0;
+  const knownIds = new Set();
+  
+  cbs.forEach(cb => {
+    // Treat secondary nodes as more critical to mastery (2 points vs 1 point)
+    const weight = cb.dataset.category === 'secondary' ? 2 : 1;
+    totalScore += weight;
+    if (cb.checked) {
+       userScore += weight;
+       knownIds.add(cb.value);
+    }
+  });
+  
+  const percentage = Math.round((userScore / totalScore) * 100) || 0;
+  
+  // Re-inject the graph with known IDs injected so that they are visually tracked
+  if (currentAiData) {
+    injectAiData(currentAiData, knownIds);
+  }
+  
+  const resultPanel = document.getElementById('checklist-result');
+  const bar = document.getElementById('knowledge-bar');
+  const percentText = document.getElementById('knowledge-percent');
+  
+  resultPanel.classList.remove('hidden');
+  resultPanel.classList.add('flex');
+  
+  // Animate Bar Graph and text Counter
+  bar.style.width = '0%';
+  percentText.textContent = '0%';
+  
+  setTimeout(() => {
+    bar.style.width = percentage + '%';
+    let curr = 0;
+    const interval = setInterval(() => {
+      curr += 2;
+      if (curr >= percentage) {
+        curr = percentage;
+        clearInterval(interval);
+      }
+      percentText.textContent = curr + '%';
+    }, 20);
+  }, 100);
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if(document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for(let i=0; i<cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if(cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+          }
+      }
+  }
+  return cookieValue;
+}
+</script>
+{% endblock %}

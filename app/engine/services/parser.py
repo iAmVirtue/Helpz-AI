@@ -1,3 +1,5 @@
+# parser.py extracts text from pdf 
+
 from pypdf import PdfReader
 
 def extract_text_from_pdf(pdf_file):

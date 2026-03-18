@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Ananya Robinson | Software Developer & AI Enthusiast{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/about_me.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="w-full max-w-7xl mx-auto px-4 sm:px-8 py-12 md:py-20 mt-16">
+
+    <!-- BENTO GRID SYSTEM -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-min">
+
+        <!-- =====================================
+             TILE 1: HERO & IDENTITY (Spans 2 cols)
+             ===================================== -->
+        <div class="bento-card reveal md:col-span-2 md:row-span-2 p-8 flex flex-col justify-between group">
+            <div class="bento-content">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ios-blue/10 border border-ios-blue/20 w-fit mb-6">
+                    <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+                    <span class="text-xs font-medium text-ios-blue tracking-wide uppercase">Available for
+                        Internships</span>
+                </div>
+
+                <h1 class="text-5xl md:text-6xl font-extrabold text-white leading-tight mb-4">
+                    Hi, I'm <br /><span class="text-ios-blue text-glow">Ananya Robinson.</span>
+                </h1>
+
+                <p class="text-ash text-lg md:text-xl font-light leading-relaxed mb-8 max-w-md">
+                    A passionate IT student specializing in <strong class="text-white font-medium">Web
+                        Development</strong> and <strong class="text-white font-medium">Artificial
+                        Intelligence</strong>. I build interactive applications and intelligent systems.
+                </p>
+
+                <div class="mt-auto flex flex-wrap gap-4">
+                    <a href="mailto:ananya.robinson@s.amity.edu"
+                        class="px-6 py-3 rounded-xl bg-ios-blue text-white font-semibold flex items-center gap-2 hover:bg-white hover:text-ios-blue transition-colors">
+                        <i class="ph ph-envelope-simple text-xl"></i> Contact Me
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- =====================================
+             TILE 2: QUICK STATS / EDUCATION
+             ===================================== -->
+        <div class="bento-card reveal md:col-span-2 p-8">
+            <div class="bento-content flex flex-col justify-center">
+                <div class="flex items-start justify-between mb-4">
+                    <i class="ph ph-graduation-cap text-4xl text-ash group-hover:text-white transition-colors"></i>
+                    <span class="text-xs font-bold text-ash/60 uppercase tracking-widest"> 2023-2027</span>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-1">Amity University, Noida</h3>
+                <p class="text-ios-blue font-medium mb-3">B.Tech - Information Technology</p>
+                <div class="flex gap-4 items-center">
+                    <div class="bg-surface/80 px-4 py-2 rounded-lg border border-white/5">
+                        <span class="block text-xs text-ash mb-1">Current CGPA</span>
+                        <span class="block text-xl font-bold text-white">7.37</span>
+                    </div>
+                    <div class="bg-surface/80 px-4 py-2 rounded-lg border border-white/5">
+                        <span class="block text-xs text-ash mb-1">Location</span>
+                        <span class="block text-sm font-medium text-white mt-1">Noida, UP</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =====================================
+             TILE 3: TECH STACK (Skills)
+             ===================================== -->
+        <div class="bento-card reveal md:col-span-2 p-8 border-t-4 border-t-ios-blue">
+            <div class="bento-content">
+                <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <i class="ph ph-code-block text-ios-blue"></i> Tech Arsenal
+                </h3>
+
+                <div class="space-y-5" id="skills-container">
+                    <!-- Skills injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- =====================================
+             TILE 4: FEATURED PROJECT (Chatbot)
+             ===================================== -->
+        <div class="bento-card reveal md:col-span-2 md:row-span-2 p-8 bg-gradient-to-br from-surface to-[#10141f]">
+            <div class="bento-content">
+                <div
+                    class="w-12 h-12 rounded-xl bg-ios-blue/20 flex items-center justify-center mb-6 border border-ios-blue/30">
+                    <i class="ph ph-robot text-2xl text-ios-blue"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-3">Health Care Chatbot</h3>
+                <p class="text-ash font-light text-sm mb-6 leading-relaxed">
+                    A smart NLP-based chatbot capable of understanding user symptoms and suggesting appropriate doctors.
+                    Features voice interaction and a graphical interface.
+                </p>
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <span class="px-3 py-1 bg-surface rounded-md text-xs text-ash border border-white/5">NLP</span>
+                    <span class="px-3 py-1 bg-surface rounded-md text-xs text-ash border border-white/5">Python</span>
+                    <span class="px-3 py-1 bg-surface rounded-md text-xs text-ash border border-white/5">Voice UI</span>
+                </div>
+                <a href="#"
+                    class="mt-auto inline-flex items-center gap-2 text-ios-blue font-medium hover:text-white transition-colors group">
+                    View Details <i
+                        class="ph ph-arrow-up-right group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- =====================================
+             TILE 5: PROJECT LISTING (Dynamic)
+             ===================================== -->
+        <div class="bento-card reveal md:col-span-2 p-8">
+            <div class="bento-content">
+                <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <i class="ph ph-folder-open text-accent"></i> Other Projects
+                </h3>
+                <div class="space-y-4" id="projects-container">
+                    <!-- Other projects injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- =====================================
+             TILE 6: LEADERSHIP & EXP (Full Width)
+             ===================================== -->
+        <div class="bento-card reveal md:col-span-4 p-8">
+            <div class="bento-content">
+                <h3 class="text-xl font-bold text-white mb-8 flex items-center gap-2">
+                    <i class="ph ph-users-three text-ios-blue"></i> Leadership & Community
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="experience-container">
+                    <!-- Experience injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- =====================================
+             TILE 7: ACHIEVEMENTS
+             ===================================== -->
+        <div class="bento-card reveal md:col-span-4 p-8 bg-ios-blue/5 border-ios-blue/20">
+            <div class="bento-content flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                        <i class="ph ph-trophy text-yellow-400"></i> Achievements
+                    </h3>
+                    <p class="text-ash text-sm">Selected Internally for Smart India Hackathon (SIH) & active participant
+                        in Cyber Cup and various coding challenges.</p>
+                </div>
+                <div class="shrink-0">
+                    <span
+                        class="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-white flex items-center gap-2">
+                        <i class="ph ph-medal text-accent"></i> Sports Winner (Sangathan)
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/about_me.js' %}"></script>
+{% endblock %}
