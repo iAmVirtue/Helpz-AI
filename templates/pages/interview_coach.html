@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-darkbg via-darkbg to-surface/20 py-8 md:py-16">
+  <div class="max-w-4xl mx-auto px-4 md:px-8">
+
+    <!-- Header -->
+    <div class="mb-8 md:mb-12">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-2 flex items-center gap-3">
+        <i class="ph ph-chat-circle text-ios-blue text-5xl"></i>
+        Interview Coach
+      </h1>
+      <p class="text-ash text-lg">Practice interviews with AI feedback in real-time</p>
+    </div>
+
+    <!-- Setup Form (Step 1) -->
+    <div id="setup-section" class="glass-panel rounded-3xl p-6 md:p-10 space-y-6 shadow-2xl mb-6">
+      <div class="reveal-step pt-2">
+        <label class="block text-white font-semibold mb-3 flex items-center gap-2">
+          <i class="ph ph-briefcase text-ios-blue"></i>
+          Job Role/Position
+        </label>
+        <input
+          type="text"
+          id="role-input"
+          placeholder="e.g., Software Engineer, Product Manager, Data Scientist"
+          class="w-full bg-surface/80 border border-ash/20 rounded-2xl p-4 text-white placeholder-ash/50 focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue/50 transition-all"
+          value="Software Engineer"
+        >
+        <p class="text-ash text-sm mt-2">Roles: Software Engineer, Product Manager, Data Scientist, Design</p>
+      </div>
+
+      <div class="reveal-step">
+        <label class="block text-white font-semibold mb-3 flex items-center gap-2">
+          <i class="ph ph-buildings text-ios-blue"></i>
+          Company Name (Optional)
+        </label>
+        <input
+          type="text"
+          id="company-input"
+          placeholder="e.g., Google, Microsoft, Startup Inc."
+          class="w-full bg-surface/80 border border-ash/20 rounded-2xl p-4 text-white placeholder-ash/50 focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue/50 transition-all"
+        >
+      </div>
+
+      <div class="reveal-step">
+        <label class="block text-white font-semibold mb-3 flex items-center gap-2">
+          <i class="ph ph-graduation-cap text-ios-blue"></i>
+          Experience Level
+        </label>
+        <select
+          id="experience-input"
+          class="w-full bg-surface/80 border border-ash/20 rounded-2xl p-4 text-white focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue/50 transition-all"
+        >
+          <option value="Entry Level (0-2 years)">Entry Level (0-2 years)</option>
+          <option value="Mid Level (2-5 years)" selected>Mid Level (2-5 years)</option>
+          <option value="Senior (5-10 years)">Senior (5-10 years)</option>
+          <option value="Principal (10+ years)">Principal (10+ years)</option>
+        </select>
+      </div>
+
+      <button
+        id="start-btn"
+        class="w-full py-4 rounded-2xl bg-ios-blue text-white font-bold shadow-[0_0_20px_rgba(10,132,255,0.4)] hover:shadow-[0_0_30px_rgba(10,132,255,0.6)] transform hover:-translate-y-1 transition-all duration-300 flex justify-center items-center gap-2 reveal-step"
+      >
+        <i class="ph ph-play-circle"></i>
+        Start Interview
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-section" class="hidden glass-panel rounded-3xl p-10 text-center shadow-2xl mb-6">
+      <div class="flex justify-center mb-4">
+        <div class="animate-spin">
+          <i class="ph ph-spinner text-ios-blue text-4xl"></i>
+        </div>
+      </div>
+      <p class="text-white font-semibold">Initializing interview...</p>
+      <p class="text-ash text-sm mt-2">Getting your first question ready</p>
+    </div>
+
+    <!-- Chat Section (Step 2) -->
+    <div id="chat-section" class="hidden">
+      <!-- Session Info -->
+      <div class="glass-panel rounded-3xl p-6 mb-6 shadow-2xl">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p class="text-ash text-sm">Interview Role</p>
+            <p id="session-role" class="text-white font-bold text-lg"></p>
+          </div>
+          <div class="hidden md:block w-px h-12 bg-ash/20"></div>
+          <div>
+            <p class="text-ash text-sm">Questions Answered</p>
+            <p id="question-count" class="text-white font-bold text-lg">0 / 5</p>
+          </div>
+          <div class="hidden md:block w-px h-12 bg-ash/20"></div>
+          <div>
+            <p class="text-ash text-sm">Current Score</p>
+            <p id="current-score" class="text-white font-bold text-lg">--</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Container -->
+      <div class="glass-panel rounded-3xl p-6 md:p-8 shadow-2xl mb-6 flex flex-col h-[500px]">
+        <!-- Messages -->
+        <div id="messages-container" class="flex-1 overflow-y-auto space-y-4 mb-6 pr-2">
+          <!-- Messages will be inserted here -->
+        </div>
+
+        <!-- Input Area -->
+        <div class="border-t border-ash/20 pt-4">
+          <div class="flex gap-3">
+            <textarea
+              id="message-input"
+              placeholder="Type your answer here..."
+              class="flex-1 bg-surface/80 border border-ash/20 rounded-2xl p-4 text-white placeholder-ash/50 focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue/50 resize-none max-h-24 transition-all"
+              rows="3"
+            ></textarea>
+            <button
+              id="send-btn"
+              class="bg-ios-blue text-white font-bold rounded-2xl px-6 py-4 hover:shadow-[0_0_20px_rgba(10,132,255,0.6)] transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center"
+            >
+              <i class="ph ph-paper-plane-tilt text-lg"></i>
+            </button>
+          </div>
+          <div id="input-error" class="text-red-400 text-sm mt-2 hidden">Please enter a message</div>
+        </div>
+      </div>
+
+      <!-- End Interview Button -->
+      <button
+        id="end-interview-btn"
+        class="w-full py-3 rounded-2xl bg-accent/20 border border-accent/50 text-accent font-semibold hover:bg-accent/30 transition-all"
+      >
+        <i class="ph ph-check-circle mr-2"></i>
+        End Interview & See Results
+      </button>
+    </div>
+
+    <!-- Results Section (Step 3) -->
+    <div id="results-section" class="hidden">
+      <!-- Overall Score Card -->
+      <div class="glass-panel rounded-3xl p-8 shadow-2xl mb-6">
+        <div class="text-center mb-8">
+          <p class="text-ash text-sm uppercase tracking-wider">Interview Performance</p>
+          <div class="text-6xl font-bold mt-4 mb-2">
+            <span id="final-score" class="text-ios-blue">--</span>
+            <span class="text-3xl text-ash">/100</span>
+          </div>
+          <p id="score-label" class="text-white font-semibold text-lg">Excellent!</p>
+        </div>
+
+        <!-- Metric Breakdown -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-surface/50 rounded-2xl p-4">
+            <p class="text-ash text-sm mb-2 flex items-center gap-2">
+              <i class="ph ph-book-open text-ios-blue"></i>
+              Technical Depth
+            </p>
+            <div class="flex items-end gap-2">
+              <span id="metric-technical" class="text-2xl font-bold text-ios-blue">--</span>
+              <span class="text-ash text-sm mb-1">/10</span>
+            </div>
+          </div>
+
+          <div class="bg-surface/50 rounded-2xl p-4">
+            <p class="text-ash text-sm mb-2 flex items-center gap-2">
+              <i class="ph ph-target text-accent"></i>
+              Relevance to Role
+            </p>
+            <div class="flex items-end gap-2">
+              <span id="metric-relevance" class="text-2xl font-bold text-accent">--</span>
+              <span class="text-ash text-sm mb-1">/10</span>
+            </div>
+          </div>
+
+          <div class="bg-surface/50 rounded-2xl p-4">
+            <p class="text-ash text-sm mb-2 flex items-center gap-2">
+              <i class="ph ph-microphone text-purple-400"></i>
+              Confidence Level
+            </p>
+            <div class="flex items-end gap-2">
+              <span id="metric-confidence" class="text-2xl font-bold text-purple-400">--</span>
+              <span class="text-ash text-sm mb-1">/10</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- Strengths -->
+        <div class="glass-panel rounded-3xl p-6 shadow-2xl">
+          <h3 class="text-white font-bold text-lg mb-4 flex items-center gap-2">
+            <i class="ph ph-star text-accent"></i>
+            Your Strengths
+          </h3>
+          <ul id="strengths-list" class="space-y-2">
+            <!-- Items will be inserted here -->
+          </ul>
+        </div>
+
+        <!-- Areas to Improve -->
+        <div class="glass-panel rounded-3xl p-6 shadow-2xl">
+          <h3 class="text-white font-bold text-lg mb-4 flex items-center gap-2">
+            <i class="ph ph-lightning text-ios-blue"></i>
+            Areas to Improve
+          </h3>
+          <ul id="improvements-list" class="space-y-2">
+            <!-- Items will be inserted here -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col md:flex-row gap-4">
+        <button
+          id="restart-btn"
+          class="flex-1 py-4 rounded-2xl bg-ios-blue text-white font-bold shadow-[0_0_20px_rgba(10,132,255,0.4)] hover:shadow-[0_0_30px_rgba(10,132,255,0.6)] transform hover:-translate-y-1 transition-all duration-300 flex justify-center items-center gap-2"
+        >
+          <i class="ph ph-arrows-clockwise"></i>
+          Try Another Interview
+        </button>
+        <a
+          href="/"
+          class="flex-1 py-4 rounded-2xl bg-surface/80 border border-ash/20 text-white font-bold hover:bg-surface transition-all flex justify-center items-center gap-2"
+        >
+          <i class="ph ph-house"></i>
+          Back to Home
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="/static/js/chatbot.js"></script>
+{% endblock %}
