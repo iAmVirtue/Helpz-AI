@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-darkbg via-darkbg to-surface/20 py-8 md:py-16">
@@ -235,5 +236,5 @@
   </div>
 </div>
 
-<script src="/static/js/chatbot.js"></script>
+<script src="{% static 'js/interview.js' %}"></script>
 {% endblock %}
