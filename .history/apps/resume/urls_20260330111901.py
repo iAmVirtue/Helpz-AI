@@ -4,7 +4,7 @@ from . import views
 app_name = 'resume'
 
 urlpatterns = [
-    path('', views.index, name='home'),
+    path('', views., name='home'),
     path('explore', views.explore, name='explore'),
     path('api/explore_graph/', views.generate_explore_graph, name='explore_graph'),
 ]
