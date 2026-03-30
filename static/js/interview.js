@@ -60,7 +60,7 @@ async function startInterview() {
         setupSection.classList.add('hidden');
         loadingSection.classList.remove('hidden');
 
-        const response = await fetch(`${API_BASE}/api/chat/start`, {
+        const response = await fetch(`${API_BASE}/interview/api/chat/start`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -135,7 +135,7 @@ async function sendMessage() {
 
     try {
         state.isLoading = true;
-        const response = await fetch(`${API_BASE}/api/chat/message`, {
+        const response = await fetch(`${API_BASE}/interview/api/chat/message`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -213,7 +213,7 @@ async function endInterview() {
         loadingSection.classList.remove('hidden');
         loadingSection.querySelector('p').textContent = 'Calculating your results...';
 
-        const response = await fetch(`${API_BASE}/api/chat/evaluate`, {
+        const response = await fetch(`${API_BASE}/interview/api/chat/evaluate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

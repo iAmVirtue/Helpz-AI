@@ -58,11 +58,25 @@ def get_session_id():
     """Generate a unique session ID"""
     return str(uuid.uuid4())[:8]
 
+def generate_dynamic_config(role):
+    """Generate interview config dynamically for any custom role"""
+    return {
+        "example_questions": [
+            f"Tell me about your most relevant experience in {role}",
+            f"What are the key challenges you've faced as a {role}?",
+            f"How do you approach problem-solving in your {role} position?",
+            f"What skills are most important for a successful {role}?",
+            f"Describe a project where you excelled as a {role}"
+        ],
+        "focus_areas": [f"core {role} skills", "problem-solving", "technical knowledge", "communication", "experience"],
+        "tips": f"Demonstrate deep understanding of {role} role requirements and showcase relevant experience and achievements."
+    }
+
 def get_system_prompt(role, experience_level, conversation_history=None):
     """Create a role-specific system prompt for Gemini"""
 
     role_lower = role.lower()
-    config = ROLE_CONFIGS.get(role_lower, ROLE_CONFIGS["software engineer"])
+    config = ROLE_CONFIGS.get(role_lower, generate_dynamic_config(role))
 
     history_context = ""
     if conversation_history and len(conversation_history) > 0:
@@ -106,8 +120,8 @@ def generate_interview_question(role, experience_level, conversation_history=Non
         }
 
     role_lower = role.lower()
-    config = ROLE_CONFIGS.get(role_lower, ROLE_CONFIGS["software engineer"])
-    role_confirmed = role_lower if role_lower in ROLE_CONFIGS else "software engineer"
+    config = ROLE_CONFIGS.get(role_lower, generate_dynamic_config(role))
+    role_confirmed = role_lower
 
     system_prompt = get_system_prompt(role_confirmed, experience_level, conversation_history)
 
@@ -244,7 +258,7 @@ def generate_summary_feedback(role, evaluations, overall_score):
         }
 
     # Identify strengths and weaknesses based on averages
-    role_config = ROLE_CONFIGS.get(role.lower(), ROLE_CONFIGS["software engineer"])
+    role_config = ROLE_CONFIGS.get(role.lower(), generate_dynamic_config(role))
 
     technical_avg = sum([e.get('technical_depth', 5) for e in evaluations]) / len(evaluations)
     relevance_avg = sum([e.get('relevance', 5) for e in evaluations]) / len(evaluations)
